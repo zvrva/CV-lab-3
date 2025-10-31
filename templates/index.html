@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактор изображений</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+            color: black;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .upload-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .upload-btn {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .upload-btn:hover {
+            background: #45a049;
+        }
+
+        .image-section {
+            background: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .image-section h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+            overflow: hidden;
+        }
+
+        .image-placeholder img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .controls-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-panel {
+            background: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .control-panel h3 {
+            margin-bottom: 15px;
+            font-size: 16px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .transform-group {
+            background: #f9f9f9;
+            padding: 12px;
+            border: 1px solid #eee;
+            margin-bottom: 12px;
+        }
+
+        .transform-group h4 {
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 3px;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .control-group input[type="range"],
+        .control-group input[type="number"],
+        .control-group select,
+        .control-group textarea {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .control-group textarea {
+            height: 60px;
+            resize: vertical;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            background: #f0f0f0;
+        }
+
+        .btn:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: black;
+            border-color: #ffc107;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .save-section {
+            background: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .save-controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .save-controls input {
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .range-values {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        .difference-map {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+        }
+
+        .difference-map h4 {
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .mini-image-placeholder {
+            width: 100%;
+            height: 100px;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+            overflow: hidden;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .mini-image-placeholder img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .reset-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+        }
+
+        .history-section {
+            background: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .history-section h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .history-list {
+            font-size: 11px;
+            max-height: 100px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            padding: 8px;
+            border: 1px solid #eee;
+        }
+
+        .global-reset-section {
+            grid-column: 1 / -1; 
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .global-reset-btn {
+            background: #ffc107;
+            color: black;
+            border: 1px solid #ffc107;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            min-width: 150px;
+        }
+
+        .global-reset-btn:hover {
+            background: #e0a800;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            font-size: 12px;
+        }
+
+        .comparison-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .comparison-item {
+            text-align: center;
+        }
+
+        .comparison-item h5 {
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .controls-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .image-placeholder {
+                height: 300px;
+            }
+            
+            .comparison-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Улучшенный редактор изображений</h1>
+            <h4>High-pass фильтры, свёртка, углы и границы</h4>
+        </div>
+
+        <div class="upload-section">
+            <input type="file" id="imageInput" accept="image/*" class="hidden">
+            <button class="upload-btn" onclick="document.getElementById('imageInput').click()">
+                Загрузить изображение
+            </button>
+        </div>
+
+        <div class="image-section">
+            <h3>Результат обработки</h3>
+            <div class="image-placeholder" id="processedImage">
+                <span>Изображение не загружено</span>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <h3>История преобразований</h3>
+            <div class="history-list" id="historyList">
+                <span>История появится здесь</span>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <!-- Цветность -->
+            <div class="control-panel">
+                <h3>Преобразования цветности</h3>
+                
+                <div class="transform-group">
+                    <h4>Логарифмическое преобразование</h4>
+                    <div class="control-group">
+                        <button class="btn btn-primary" onclick="applyTransform('logarithmic')">Применить</button>
+                    </div>
+                </div>
+
+                <div class="transform-group">
+                    <h4>Степенное преобразование</h4>
+                    <div class="control-group">
+                        <label>Значение гаммы:</label>
+                        <input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1.0">
+                        <div class="range-values">
+                            <span>0.1</span>
+                            <span id="gammaValue">1.0</span>
+                            <span>3.0</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="applyPowerTransform()">Применить</button>
+                    </div>
+                </div>
+
+                <div class="transform-group">
+                    <h4>Бинарное преобразование</h4>
+                    <div class="control-group">
+                        <label>Пороговое значение:</label>
+                        <input type="range" id="threshold" min="0" max="255" value="128">
+                        <div class="range-values">
+                            <span>0</span>
+                            <span id="thresholdValue">128</span>
+                            <span>255</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="applyBinaryTransform()">Применить</button>
+                    </div>
+                </div>
+
+                <div class="transform-group">
+                    <h4>Вырезание диапазона яркостей</h4>
+                    <div class="control-group">
+                        <label>Минимальная яркость:</label>
+                        <input type="number" id="minRange" value="50" min="0" max="255">
+                    </div>
+                    <div class="control-group">
+                        <label>Максимальная яркость:</label>
+                        <input type="number" id="maxRange" value="200" min="0" max="255">
+                    </div>
+                    <div class="control-group">
+                        <label>Константное значение:</label>
+                        <input type="number" id="constantValue" value="0" min="0" max="255">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="applyIntensityRange(false)">Заменить константой</button>
+                        <button class="btn btn-secondary" onclick="applyIntensityRange(true)">Сохранить исходные</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Сглаживание -->
+            <div class="control-panel">
+                <h3>Сглаживание изображения</h3>
+                
+                <div class="transform-group">
+                    <h4>Добавление шума</h4>
+                    <div class="control-group">
+                        <label>Тип шума:</label>
+                        <select id="noiseType">
+                            <option value="gaussian">Гауссовский</option>
+                            <option value="salt_pepper">Соль-перец</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Интенсивность шума:</label>
+                        <input type="range" id="noiseAmount" min="0.01" max="0.5" step="0.01" value="0.1">
+                        <div class="range-values">
+                            <span>1%</span>
+                            <span id="noiseAmountValue">10%</span>
+                            <span>50%</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="applyNoise()">Добавить шум</button>
+                    </div>
+                </div>
+
+                <div class="transform-group">
+                    <h4>Прямоугольный фильтр</h4>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="applyTransform('rectangular_filter', {kernel_size: 3})">3x3</button>
+                        <button class="btn btn-primary" onclick="applyTransform('rectangular_filter', {kernel_size: 5})">5x5</button>
+                    </div>
+                </div>
+
+                <div class="transform-group">
+                    <h4>Медианный фильтр</h4>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="applyTransform('median_filter', {kernel_size: 3})">3x3</button>
+                        <button class="btn btn-primary" onclick="applyTransform('median_filter', {kernel_size: 5})">5x5</button>
+                    </div>
+                </div>
+
+                <div class="transform-group">
+                    <h4>Фильтр Гаусса</h4>
+                    <div class="control-group">
+                        <label>Значение σ:</label>
+                        <input type="range" id="gaussianSigma" min="0.5" max="3" step="0.1" value="1.0">
+                        <div class="range-values">
+                            <span>0.5</span>
+                            <span id="gaussianSigmaValue">1.0</span>
+                            <span>3.0</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="applyGaussianFilter()">Применить</button>
+                    </div>
+                </div>
+
+                <div class="transform-group">
+                    <h4>Сигма-фильтр</h4>
+                    <div class="control-group">
+                        <label>Значение σ (0-255):</label>
+                        <input type="range" id="sigmaFilter" min="0" max="255" value="30">
+                        <div class="range-values">
+                            <span>0</span>
+                            <span id="sigmaFilterValue">30</span>
+                            <span>255</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="applySigmaFilter()">Применить</button>
+                    </div>
+                </div>
+
+                <div class="difference-map">
+                    <h4>Карта разности с предыдущим</h4>
+                    <div class="mini-image-placeholder" id="diffMap">
+                        <span>Карта разности появится здесь</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <h3>Увеличение резкости</h3>
+                
+                <div class="transform-group">
+                    <h4>Нерезкое маскирование</h4>
+                    <div class="control-group">
+                        <label>Размер ядра:</label>
+                        <input type="range" id="kernelSize" min="3" max="11" step="2" value="3">
+                        <div class="range-values">
+                            <span>3</span>
+                            <span id="kernelSizeValue">3</span>
+                            <span>11</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Коэффициент усиления:</label>
+                        <input type="range" id="lambdaVal" min="0.1" max="3" step="0.1" value="1.0">
+                        <div class="range-values">
+                            <span>0.1</span>
+                            <span id="lambdaValue">1.0</span>
+                            <span>3.0</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="applySharpening()">Применить</button>
+                    </div>
+                </div>
+
+                <div class="transform-group">
+                    <h4>High-pass фильтр</h4>
+                    <div class="control-group">
+                        <label>Тип размытия:</label>
+                        <select id="blurType">
+                            <option value="average">Усреднение</option>
+                            <option value="gaussian">Гауссово</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Размер ядра:</label>
+                        <input type="range" id="hpKernelSize" min="3" max="11" step="2" value="3">
+                        <div class="range-values">
+                            <span>3</span>
+                            <span id="hpKernelSizeValue">3</span>
+                            <span>11</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Коэффициент c:</label>
+                        <input type="range" id="hpC" min="0.1" max="2" step="0.1" value="1.0">
+                        <div class="range-values">
+                            <span>0.1</span>
+                            <span id="hpCValue">1.0</span>
+                            <span>2.0</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="applyHighPass()">Применить High-pass</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <h3>Свёртка с матрицей</h3>
+                
+                <div class="transform-group">
+                    <h4>Стандартные матрицы</h4>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="setStandardKernel('identity')">Единичная</button>
+                        <button class="btn btn-primary" onclick="setStandardKernel('blur')">Размытие</button>
+                        <button class="btn btn-primary" onclick="setStandardKernel('sharpen')">Резкость</button>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="setStandardKernel('sobel_x')">Собель X</button>
+                        <button class="btn btn-primary" onclick="setStandardKernel('sobel_y')">Собель Y</button>
+                        <button class="btn btn-primary" onclick="setStandardKernel('laplacian')">Лапласиан</button>
+                    </div>
+                </div>
+
+                <div class="transform-group">
+                    <h4>Произвольная матрица</h4>
+                    <div class="control-group">
+                        <label>Размер матрицы (n×n):</label>
+                        <input type="number" id="kernelSizeInput" min="1" max="15" value="3">
+                    </div>
+                    <div class="control-group">
+                        <label>Элементы матрицы (через пробел или запятую):</label>
+                        <textarea id="kernelInput" placeholder="1 1 1&#10;1 1 1&#10;1 1 1">1 1 1
+1 1 1
+1 1 1</textarea>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="normalizeKernel" checked>
+                        <label for="normalizeKernel">Нормализация</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="add128">
+                        <label for="add128">+128 к результату</label>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="applyConvolution()">Применить свёртку</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <h3>Выделение углов и границ</h3>
+                
+                <div class="transform-group">
+                    <h4>Детектор углов Харриса</h4>
+                    <div class="control-group">
+                        <label>Параметр k:</label>
+                        <input type="range" id="harrisK" min="0.01" max="0.2" step="0.01" value="0.04">
+                        <div class="range-values">
+                            <span>0.01</span>
+                            <span id="harrisKValue">0.04</span>
+                            <span>0.2</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Порог:</label>
+                        <input type="range" id="harrisThreshold" min="0.001" max="0.1" step="0.001" value="0.01">
+                        <div class="range-values">
+                            <span>0.001</span>
+                            <span id="harrisThresholdValue">0.01</span>
+                            <span>0.1</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="applyHarrisCorners()">Найти углы</button>
+                    </div>
+                </div>
+
+                <div class="transform-group">
+                    <h4>Выделение границ</h4>
+                    <div class="comparison-section">
+                        <div class="comparison-item">
+                            <h5>Оператор Собеля</h5>
+                            <button class="btn btn-secondary" onclick="applyTransform('sobel_edges')">Найти границы</button>
+                        </div>
+                        <div class="comparison-item">
+                            <h5>Детектор Канни</h5>
+                            <div class="control-group">
+                                <label>Нижний порог:</label>
+                                <input type="number" id="cannyLow" value="50" min="0" max="255">
+                            </div>
+                            <div class="control-group">
+                                <label>Верхний порог:</label>
+                                <input type="number" id="cannyHigh" value="150" min="0" max="255">
+                            </div>
+                            <button class="btn btn-secondary" onclick="applyCannyEdges()">Найти границы</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="global-reset-section">
+            <button class="global-reset-btn" onclick="applyTransform('reset')">Сбросить все преобразования</button>
+        </div>
+        
+        <div class="save-section">
+            <h3>Сохранение результатов</h3>
+            <div class="save-controls">
+                <input type="text" id="filename" placeholder="Имя файла" value="processed_image.png">
+                <button class="btn btn-success" onclick="saveImage()">Сохранить изображение</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('gamma').addEventListener('input', function() {
+            document.getElementById('gammaValue').textContent = this.value;
+        });
+
+        document.getElementById('threshold').addEventListener('input', function() {
+            document.getElementById('thresholdValue').textContent = this.value;
+        });
+
+        document.getElementById('noiseAmount').addEventListener('input', function() {
+            document.getElementById('noiseAmountValue').textContent = Math.round(this.value * 100) + '%';
+        });
+
+        document.getElementById('gaussianSigma').addEventListener('input', function() {
+            document.getElementById('gaussianSigmaValue').textContent = this.value;
+        });
+
+        document.getElementById('sigmaFilter').addEventListener('input', function() {
+            document.getElementById('sigmaFilterValue').textContent = this.value;
+        });
+
+        document.getElementById('kernelSize').addEventListener('input', function() {
+            document.getElementById('kernelSizeValue').textContent = this.value;
+        });
+
+        document.getElementById('lambdaVal').addEventListener('input', function() {
+            document.getElementById('lambdaValue').textContent = this.value;
+        });
+
+        document.getElementById('hpKernelSize').addEventListener('input', function() {
+            document.getElementById('hpKernelSizeValue').textContent = this.value;
+        });
+
+        document.getElementById('hpC').addEventListener('input', function() {
+            document.getElementById('hpCValue').textContent = this.value;
+        });
+
+        document.getElementById('harrisK').addEventListener('input', function() {
+            document.getElementById('harrisKValue').textContent = this.value;
+        });
+
+        document.getElementById('harrisThreshold').addEventListener('input', function() {
+            document.getElementById('harrisThresholdValue').textContent = this.value;
+        });
+
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('image', file);
+
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('processedImage').innerHTML = 
+                            `<img src="data:image/png;base64,${data.image}" alt="Processed">`;
+                        updateHistory(data.history);
+                    } else {
+                        alert('Ошибка загрузки: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ошибка загрузки изображения');
+                });
+            }
+        });
+
+        function applyTransform(type, params = {}) {
+            fetch('/apply_transform', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: type,
+                    params: params
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('processedImage').innerHTML = 
+                        `<img src="data:image/png;base64,${data.image}" alt="Processed">`;
+                    updateHistory(data.history);
+                    
+                    if (data.diff_map) {
+                        document.getElementById('diffMap').innerHTML = 
+                            `<img src="data:image/png;base64,${data.diff_map}" alt="Difference Map">`;
+                    }
+                } else {
+                    alert('Ошибка применения преобразования: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка применения преобразования');
+            });
+        }
+
+        function applyPowerTransform() {
+            const gamma = parseFloat(document.getElementById('gamma').value);
+            applyTransform('power', {gamma: gamma});
+        }
+
+        function applyBinaryTransform() {
+            const threshold = parseInt(document.getElementById('threshold').value);
+            applyTransform('binary', {threshold: threshold});
+        }
+
+        function applyIntensityRange(keepOriginal) {
+            const minVal = parseInt(document.getElementById('minRange').value);
+            const maxVal = parseInt(document.getElementById('maxRange').value);
+            const constant = parseInt(document.getElementById('constantValue').value);
+
+            applyTransform('intensity_range', {
+                min_val: minVal,
+                max_val: maxVal,
+                constant: constant,
+                keep_original: keepOriginal
+            });
+        }
+
+        function applyNoise() {
+            const noiseType = document.getElementById('noiseType').value;
+            const amount = parseFloat(document.getElementById('noiseAmount').value);
+
+            applyTransform('add_noise', {
+                noise_type: noiseType,
+                amount: amount
+            });
+        }
+
+        function applyGaussianFilter() {
+            const sigma = parseFloat(document.getElementById('gaussianSigma').value);
+            applyTransform('gaussian_filter', {sigma: sigma});
+        }
+
+        function applySigmaFilter() {
+            const sigma = parseInt(document.getElementById('sigmaFilter').value);
+            applyTransform('sigma_filter', {sigma: sigma});
+        }
+
+        function applySharpening() {
+            const k_size = parseInt(document.getElementById('kernelSize').value);
+            const lambda_val = parseFloat(document.getElementById('lambdaVal').value);
+
+            applyTransform('unsharp_masking', {
+                k_size: k_size,
+                lambda_val: lambda_val
+            });
+        }
+
+        function applyHighPass() {
+            const blurType = document.getElementById('blurType').value;
+            const kernelSize = parseInt(document.getElementById('hpKernelSize').value);
+            const c = parseFloat(document.getElementById('hpC').value);
+
+            applyTransform('high_pass', {
+                blur_type: blurType,
+                kernel_size: kernelSize,
+                c: c
+            });
+        }
+
+        function applyHarrisCorners() {
+            const k = parseFloat(document.getElementById('harrisK').value);
+            const threshold = parseFloat(document.getElementById('harrisThreshold').value);
+
+            applyTransform('harris_corners', {
+                k: k,
+                threshold: threshold
+            });
+        }
+
+        function applyCannyEdges() {
+            const lowThreshold = parseInt(document.getElementById('cannyLow').value);
+            const highThreshold = parseInt(document.getElementById('cannyHigh').value);
+
+            applyTransform('canny_edges', {
+                low_threshold: lowThreshold,
+                high_threshold: highThreshold
+            });
+        }
+
+        function setStandardKernel(type) {
+            let kernelText = '';
+            let size = 3;
+
+            switch(type) {
+                case 'identity':
+                    kernelText = '0 0 0\n0 1 0\n0 0 0';
+                    break;
+                case 'blur':
+                    kernelText = '1 1 1\n1 1 1\n1 1 1';
+                    break;
+                case 'sharpen':
+                    kernelText = '0 -1 0\n-1 5 -1\n0 -1 0';
+                    break;
+                case 'sobel_x':
+                    kernelText = '-1 0 1\n-2 0 2\n-1 0 1';
+                    break;
+                case 'sobel_y':
+                    kernelText = '-1 -2 -1\n0 0 0\n1 2 1';
+                    break;
+                case 'laplacian':
+                    kernelText = '0 -1 0\n-1 4 -1\n0 -1 0';
+                    break;
+            }
+
+            document.getElementById('kernelSizeInput').value = size;
+            document.getElementById('kernelInput').value = kernelText;
+        }
+
+        function applyConvolution() {
+            const size = parseInt(document.getElementById('kernelSizeInput').value);
+            const kernelText = document.getElementById('kernelInput').value;
+            const normalize = document.getElementById('normalizeKernel').checked;
+            const add128 = document.getElementById('add128').checked;
+
+            try {
+                const lines = kernelText.trim().split('\n');
+                const kernel = [];
+                
+                for (let line of lines) {
+                    const row = line.trim().split(/[\s,]+/).map(Number);
+                    if (row.length !== size) {
+                        throw new Error(`Каждая строка должна содержать ${size} чисел`);
+                    }
+                    kernel.push(row);
+                }
+
+                if (kernel.length !== size) {
+                    throw new Error(`Матрица должна содержать ${size} строк`);
+                }
+
+                applyTransform('convolution', {
+                    kernel: kernel,
+                    normalize: normalize,
+                    add_128: add128
+                });
+
+            } catch (error) {
+                alert('Ошибка в формате матрицы: ' + error.message);
+            }
+        }
+
+        function updateHistory(history) {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            history.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.textContent = `${index + 1}. ${item}`;
+                historyList.appendChild(div);
+            });
+        }
+
+        function saveImage() {
+            const filename = document.getElementById('filename').value;
+
+            fetch('/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    filename: filename
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Изображение успешно сохранено как ' + data.filename);
+                } else {
+                    alert('Ошибка сохранения: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка сохранения изображения');
+            });
+        }
+
+        setStandardKernel('blur');
+    </script>
+</body>
+</html>
