@@ -441,7 +441,7 @@ class ImageProcessor:
                 kernel = kernel / kernel_sum
         
         for k in range(channels):
-            padded = np.pad(self.image_array[:, :, k], pad, mode='edge') # значения с ркаев массива
+            padded = np.pad(self.image_array[:, :, k], pad, mode='edge')
             
             for i in range(height):
                 for j in range(width):
@@ -559,18 +559,7 @@ class ImageProcessor:
         
         corners = R > auto_threshold
         
-        num_corners = np.sum(corners)
-        
         result_array = self.image_array.copy()
-        
-        if num_corners > 1000:  
-            auto_threshold = np.percentile(R_flat_sorted, 98) 
-            corners = R > auto_threshold
-            num_corners = np.sum(corners)
-        elif num_corners < 10:  
-            auto_threshold = np.percentile(R_flat_sorted, 90)  
-            corners = R > auto_threshold
-            num_corners = np.sum(corners)
         
         corner_count = 0
         for i in range(height):
@@ -584,6 +573,123 @@ class ImageProcessor:
                                 result_array[ni, nj, 0] = 255  
                                 result_array[ni, nj, 1] = 0
                                 result_array[ni, nj, 2] = 0
+        
+        self.image_array = result_array
+        self._update_current_image()
+        return True
+
+    def shi_tomasi_corner_detection(self, threshold=0.01):
+        """Детектор углов Ши-Томаси"""
+        if self.image_array is None:
+            return False
+            
+        height, width, channels = self.image_array.shape
+        gray = np.zeros((height, width))
+        
+        for i in range(height):
+            for j in range(width):
+                r = self.image_array[i, j, 0]
+                g = self.image_array[i, j, 1]
+                b = self.image_array[i, j, 2]
+                gray[i, j] = 0.2989 * r + 0.5870 * g + 0.1140 * b
+        
+        gray = (gray - np.min(gray)) / (np.max(gray) - np.min(gray)) * 255
+        
+        Ix = np.zeros_like(gray)
+        Iy = np.zeros_like(gray)
+        
+        sobel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+        sobel_y = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+        
+        pad = 1
+        padded_gray = np.pad(gray, pad, mode='edge')
+        
+        for i in range(height):
+            for j in range(width):
+                gx = 0.0
+                for ki in range(3):
+                    for kj in range(3):
+                        gx += padded_gray[i + ki, j + kj] * sobel_x[ki, kj]
+                Ix[i, j] = gx
+                
+                gy = 0.0
+                for ki in range(3):
+                    for kj in range(3):
+                        gy += padded_gray[i + ki, j + kj] * sobel_y[ki, kj]
+                Iy[i, j] = gy
+        
+        Ix2 = Ix * Ix
+        Iy2 = Iy * Iy
+        Ixy = Ix * Iy
+        
+        def gaussian_filter_for_shi_tomasi(image, sigma=1.0):
+            """Гауссов фильтр"""
+            size = int(3 * sigma) * 2 + 1
+            if size % 2 == 0:
+                size += 1
+            pad = size // 2
+            
+            kernel = np.zeros((size, size))
+            total = 0.0
+            for i in range(size):
+                for j in range(size):
+                    x = i - pad
+                    y = j - pad
+                    value = math.exp(-(x*x + y*y) / (2 * sigma * sigma))
+                    kernel[i, j] = value
+                    total += value
+            
+            kernel /= total
+            
+            h, w = image.shape
+            padded = np.pad(image, pad, mode='edge')
+            result = np.zeros_like(image)
+            
+            for i in range(h):
+                for j in range(w):
+                    total_val = 0.0
+                    for ki in range(size):
+                        for kj in range(size):
+                            total_val += padded[i + ki, j + kj] * kernel[ki, kj]
+                    result[i, j] = total_val
+            
+            return result
+        
+        Ix2 = gaussian_filter_for_shi_tomasi(Ix2, sigma=1.0)
+        Iy2 = gaussian_filter_for_shi_tomasi(Iy2, sigma=1.0)
+        Ixy = gaussian_filter_for_shi_tomasi(Ixy, sigma=1.0)
+        
+        det = Ix2 * Iy2 - Ixy * Ixy
+        trace = Ix2 + Iy2
+        
+        lambda_min = (trace - np.sqrt(trace * trace - 4 * det)) / 2
+        
+        R = lambda_min
+        
+        R_flat = R.flatten()
+        R_flat_sorted = np.sort(R_flat)
+        
+        if threshold < 0.1:  
+            auto_threshold = np.percentile(R_flat_sorted, 95)  
+        else:
+            auto_threshold = np.percentile(R_flat_sorted, 100 * (1 - threshold))
+        
+        corners = R > auto_threshold
+        
+        result_array = self.image_array.copy()
+        
+        corner_count = 0
+        for i in range(height):
+            for j in range(width):
+                if corners[i, j]:
+                    corner_count += 1
+                    for di in range(-1, 2):
+                        for dj in range(-1, 2):
+                            ni, nj = i + di, j + dj
+                            if 0 <= ni < height and 0 <= nj < width:
+                                result_array[ni, nj, 0] = 0    
+                                result_array[ni, nj, 1] = 0    
+                                result_array[ni, nj, 2] = 255  
         
         self.image_array = result_array
         self._update_current_image()
@@ -856,6 +962,10 @@ class ImageProcessor:
         elif transform_type == 'harris_corners':
             success = self.harris_corner_detection(
                 params.get('k', 0.04),
+                params.get('threshold', 0.01)
+            )
+        elif transform_type == 'shi_tomasi_corners':
+            success = self.shi_tomasi_corner_detection(
                 params.get('threshold', 0.01)
             )
         elif transform_type == 'sobel_edges':

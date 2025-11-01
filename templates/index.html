@@ -686,7 +686,23 @@
                         </div>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-primary" onclick="applyHarrisCorners()">Найти углы</button>
+                        <button class="btn btn-primary" onclick="applyHarrisCorners()">Найти углы (красные)</button>
+                    </div>
+                </div>
+
+                <div class="transform-group">
+                    <h4>Детектор углов Ши-Томаси</h4>
+                    <div class="control-group">
+                        <label>Порог:</label>
+                        <input type="range" id="shiTomasiThreshold" min="0.001" max="0.1" step="0.001" value="0.01">
+                        <div class="range-values">
+                            <span>0.001</span>
+                            <span id="shiTomasiThresholdValue">0.01</span>
+                            <span>0.1</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="applyShiTomasiCorners()">Найти углы (синие)</button>
                     </div>
                 </div>
 
@@ -770,6 +786,10 @@
 
         document.getElementById('harrisThreshold').addEventListener('input', function() {
             document.getElementById('harrisThresholdValue').textContent = this.value;
+        });
+
+        document.getElementById('shiTomasiThreshold').addEventListener('input', function() {
+            document.getElementById('shiTomasiThresholdValue').textContent = this.value;
         });
 
         document.getElementById('imageInput').addEventListener('change', function(e) {
@@ -902,6 +922,14 @@
 
             applyTransform('harris_corners', {
                 k: k,
+                threshold: threshold
+            });
+        }
+
+        function applyShiTomasiCorners() {
+            const threshold = parseFloat(document.getElementById('shiTomasiThreshold').value);
+
+            applyTransform('shi_tomasi_corners', {
                 threshold: threshold
             });
         }
